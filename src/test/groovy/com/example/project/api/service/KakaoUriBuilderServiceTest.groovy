@@ -12,7 +12,7 @@ class KakaoUriBuilderServiceTest extends Specification {
         kakaoUriBuilderService = new KakaoUriBuilderService()
     }
 
-    def "buildUriByAddressSearch - 한글 파라미터 인코딩 테스트"() {
+    def "buildUriByAddressSearch - 한글 인코딩 테스트"() {
         given:
         String address = "서울 중랑구"
         def charset = StandardCharsets.UTF_8
