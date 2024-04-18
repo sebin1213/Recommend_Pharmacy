@@ -17,5 +17,5 @@ jobs:
           heroku_api_key: ${{ secrets.HEROKU_DEPLOY_KEY }}
           # 이메일
           heroku_email: 1213hope@gmail.com
-          heroku_app_name: sns
+          heroku_app_name: SNS
           heroku_procfile: SNS/Procfile
