@@ -5,7 +5,10 @@ import com.project.SNS.exception.SimpleSnsApplicationException;
 import com.project.SNS.model.User;
 import com.project.SNS.model.entity.UserEntity;
 import com.project.SNS.repository.UserEntityRepository;
+import com.project.SNS.util.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +18,12 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class UserService {
+
+    @Value("${jwt.secret-key}")
+    private String secretKey;
+
+    @Value("${jwt.token.expired-time-ms}")
+    private Long expiredTimeMs;
 
     private final UserEntityRepository userEntityRepository;
     private final BCryptPasswordEncoder encoder;
@@ -31,9 +40,9 @@ public class UserService {
 
     public String login(String userName, String password) {
         UserEntity userEntity = userEntityRepository.findByUserName(userName).orElseThrow(() -> new SimpleSnsApplicationException(ErrorCode.DUPLICATED_USER_NAME));
-        if (!userEntity.getPassword().equals(password)){
+        if (!encoder.matches(password, userEntity.getPassword())) {
             throw new SimpleSnsApplicationException(ErrorCode.INVALID_PASSWORD);
         }
-        return "";
+        return JwtTokenUtils.generateAccessToken(userName, secretKey, expiredTimeMs);
     }
 }
