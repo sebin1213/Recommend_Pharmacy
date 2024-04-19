@@ -27,6 +27,7 @@ public class AuthenticationConfiguration extends WebSecurityConfigurerAdapter {
                 .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+;
     }
 
 }

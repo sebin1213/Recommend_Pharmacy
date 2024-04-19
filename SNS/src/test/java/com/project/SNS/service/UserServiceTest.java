@@ -27,6 +27,9 @@ public class UserServiceTest {
     @Autowired
     UserEntityRepository userEntityRepository;
 
+    @MockBean
+    BCryptPasswordEncoder encoder;
+
 
 
     @Test
@@ -35,6 +38,7 @@ public class UserServiceTest {
         String password = "password";
         UserEntity userEntity= UserEntityFixture.get(userName,password);
         when(userEntityRepository.findByUserName(userName)).thenReturn(Optional.empty());
+        when(encoder.encode(password)).thenReturn("암호화된 패스워드");
         when(userEntityRepository.save(any())).thenReturn(Optional.of(mock(UserEntity.class)));
         Assertions.assertDoesNotThrow(() -> userService.join(userName,password));
     }
@@ -46,6 +50,7 @@ public class UserServiceTest {
         String password = "password";
         UserEntity userEntity= UserEntityFixture.get(userName,password);
         when(userEntityRepository.findByUserName(userName)).thenReturn(Optional.of(userEntity));
+        when(encoder.encode(password)).thenReturn("암호화된 패스워드");
         when(userEntityRepository.save(any())).thenReturn(Optional.of(userEntity));
 
         SimpleSnsApplicationException exception = Assertions.assertThrows(SimpleSnsApplicationException.class,
