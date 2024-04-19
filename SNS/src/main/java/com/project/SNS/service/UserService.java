@@ -19,14 +19,12 @@ public class UserService {
 
     @Transactional
     public User join(String userName, String password) {
-        Optional<UserEntity> userEntity = userEntityRepository.findByUserName(userName);
-        UserEntity entity = UserEntity.builder()
-                        .id(1)
-                        .userName(userName)
-                        .password(password)
-                        .build();
-        userEntityRepository.save(entity);
-        return new User();
+        userEntityRepository.findByUserName(userName).ifPresent(i -> {
+            throw new SimpleSnsApplicationException(ErrorCode.DUPLICATED_USER_NAME, String.format("%s is duplicated", userName));
+        });
+
+        UserEntity entity = userEntityRepository.save(UserEntity.of(userName,password));
+        return User.fromEntity(entity);
     }
 
     public String login(String userName, String password) {

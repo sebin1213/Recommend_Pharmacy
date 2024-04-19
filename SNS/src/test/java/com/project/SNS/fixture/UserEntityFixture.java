@@ -8,11 +8,7 @@ import java.time.Instant;
 public class UserEntityFixture {
 
     public static UserEntity get(String userName, String password) {
-        UserEntity entity = UserEntity.builder()
-                .id(1)
-                .userName(userName)
-                .password(password)
-                .build();
+        UserEntity entity = UserEntity.of(userName, password);
         return entity;
     }
 }

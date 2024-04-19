@@ -2,6 +2,9 @@ package com.project.SNS.controller;
 
 import com.project.SNS.controller.request.UserJoinRequest;
 import com.project.SNS.controller.request.UserLoginRequest;
+import com.project.SNS.controller.response.Response;
+import com.project.SNS.controller.response.UserJoinResponse;
+import com.project.SNS.model.User;
 import com.project.SNS.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,8 +19,9 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping("/join")
-    public void join(@RequestBody UserJoinRequest request) {
-        userService.join(request.getName(), request.getPassword());
+    public Response<UserJoinResponse> join(@RequestBody UserJoinRequest request) {
+        User user= userService.join(request.getName(), request.getPassword());
+        return Response.success(UserJoinResponse.fromUser(user));
     }
 
     @PostMapping("/login")
