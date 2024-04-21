@@ -5,13 +5,18 @@ import com.project.SNS.model.entity.UserEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+public class User implements UserDetails {
 
     private Integer id;
     private String username;
@@ -32,6 +37,31 @@ public class User {
                 entity.getUpdatedAt(),
                 entity.getRemovedAt()
         );
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority(role.toString()));
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return removedAt == null;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return removedAt == null;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return removedAt == null;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return removedAt == null;
     }
 }
 

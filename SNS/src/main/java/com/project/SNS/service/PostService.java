@@ -40,4 +40,27 @@ public class PostService {
 
         return Post.fromEntity(postEntityRepository.saveAndFlush(postEntity));
     }
+
+    public Page<Post> list(Pageable pageable) {
+        return postEntityRepository.findAll(pageable).map(Post::fromEntity);
+    }
+
+    public Page<Post> my(Integer userId, Pageable pageable) {
+        return postEntityRepository.findAllByUserId(userId, pageable).map(Post::fromEntity);
+    }
+
+    @Transactional
+    public void delete(Integer userId, Integer postId) {
+        PostEntity postEntity = postEntityRepository.findById(postId).orElseThrow(() -> new SimpleSnsApplicationException(ErrorCode.POST_NOT_FOUND, String.format("postId is %d", postId)));
+        if (!Objects.equals(postEntity.getUser().getId(), userId)) {
+            throw new SimpleSnsApplicationException(ErrorCode.INVALID_PERMISSION, String.format("user %s has no permission with post %d", userId, postId));
+        }
+        // TOBO: 추후 추가예정
+//        likeEntityRepository.deleteAllByPost(postEntity);
+//        commentEntityRepository.deleteAllByPost(postEntity);
+        postEntityRepository.delete(postEntity);
+    }
+
+
+
 }

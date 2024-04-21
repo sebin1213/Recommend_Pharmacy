@@ -9,6 +9,7 @@ import com.project.SNS.model.User;
 import com.project.SNS.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 //@Slf4j
@@ -31,6 +32,9 @@ public class UserController {
         return Response.success(new UserLoginResponse(token));
     }
 
-
+    @GetMapping("/me")
+    public Response<UserJoinResponse> me(Authentication authentication) {
+        return Response.success(UserJoinResponse.fromUser(userService.loadUserByUsername(authentication.getName())));
+    }
 
 }

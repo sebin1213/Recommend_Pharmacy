@@ -8,6 +8,7 @@ import com.project.SNS.repository.UserEntityRepository;
 import com.project.SNS.util.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class UserService implements UserDetailsService {
 
     @Value("${jwt.secret-key}")
     private String secretKey;
@@ -45,4 +46,12 @@ public class UserService {
         }
         return JwtTokenUtils.generateAccessToken(userName, secretKey, expiredTimeMs);
     }
+
+
+    public User loadUserByUsername(String userName) throws UsernameNotFoundException {
+        return userEntityRepository.findByUserName(userName).map(User::fromEntity).orElseThrow(
+                () -> new SimpleSnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("userName is %s", userName))
+        );
+    }
+
 }
