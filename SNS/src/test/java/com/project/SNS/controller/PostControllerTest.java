@@ -40,4 +40,24 @@ public class PostControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Test
+    @WithMockUser
+    void 게시글작성() throws Exception {
+        mockMvc.perform(post("/api/v1/posts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(new PostWriteRequest("title", "body"))))
+                .andDo(print())
+                .andExpect(status().isOk());
+    }
+
+
+    @Test
+    @WithAnonymousUser
+    void 게시글_작성할때_로그인상태_아니면_에러발생() throws Exception {
+        mockMvc.perform(post("/api/v1/posts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(new PostWriteRequest("title", "body"))))
+                .andDo(print())
+                .andExpect(status().is(ErrorCode.INVALID_TOKEN.getStatus().value()));
+    }
 }
