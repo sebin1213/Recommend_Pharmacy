@@ -96,4 +96,123 @@ public class PostControllerTest {
                 .andExpect(status().is(ErrorCode.POST_NOT_FOUND.getStatus().value()));
     }
 
+
+    @Test
+    @WithAnonymousUser
+    void 게시글삭제시_로그인상태가_아니면_에러발생() throws Exception {
+        mockMvc.perform(delete("/api/v1/posts/1")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().is(ErrorCode.INVALID_TOKEN.getStatus().value()));
+    }
+
+    @Test
+    @WithMockUser
+    void 게시글삭제할때_본인이_작성한_글이_아니면_에러발생() throws Exception {
+        doThrow(new SimpleSnsApplicationException(ErrorCode.INVALID_PERMISSION)).when(postService).delete(any(), eq(1));
+        mockMvc.perform(delete("/api/v1/posts/1")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer token")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().is(ErrorCode.INVALID_PERMISSION.getStatus().value()));
+    }
+
+    @Test
+    @WithMockUser
+    void 게시글삭제할때_수정하려는_글이_없으면_에러발생() throws Exception {
+        doThrow(new SimpleSnsApplicationException(ErrorCode.POST_NOT_FOUND)).when(postService).delete(any(), eq(1));
+
+        mockMvc.perform(delete("/api/v1/posts/1")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer token")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print())
+                .andExpect(status().is(ErrorCode.POST_NOT_FOUND.getStatus().value()));
+    }
+
+    @Test
+    @WithMockUser
+    void 게시글목록() throws Exception {
+        // mocking
+        when(postService.list(any())).thenReturn(Page.empty());
+
+        mockMvc.perform(get("/api/v1/posts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                ).andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithAnonymousUser
+    void 게시글목록요청시_로그인하지_않은경우() throws Exception {
+        // mocking
+        when(postService.list(any())).thenReturn(Page.empty());
+
+        mockMvc.perform(get("/api/v1/posts")
+                        .contentType(MediaType.APPLICATION_JSON)
+                ).andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @WithMockUser
+    void 나의_게시물목록() throws Exception {
+        // mocking
+        when(postService.myPosts(any(), any())).thenReturn(Page.empty());
+        mockMvc.perform(get("/api/v1/posts/my")
+                        .contentType(MediaType.APPLICATION_JSON)
+                ).andDo(print())
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithAnonymousUser
+    void 내게시물목록요청할때_로그인안했을경우() throws Exception {
+        // mocking
+        when(postService.myPosts(any(), any())).thenReturn(Page.empty());
+        mockMvc.perform(get("/api/v1/posts/my")
+                        .contentType(MediaType.APPLICATION_JSON)
+                ).andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    /**
+     * 좋아요 기능 테스트목록
+     */
+
+    @Test
+    @WithMockUser
+    void 좋아요테스트() throws Exception {
+    }
+
+    @Test
+    @WithAnonymousUser
+    void 좋아요클릭할때_로그인_안한경우() throws Exception {
+    }
+
+    @Test
+    @WithMockUser
+    void 좋아요클릭할때_게시물이_없는경우() throws Exception {
+    }
+
+    /**
+     * 댓글 기능 테스트 목록
+     */
+
+    @Test
+    @WithMockUser
+    void 댓글기능() throws Exception {
+    }
+
+
+    @Test
+    @WithAnonymousUser
+    void 댓글작성할때_로그인_안했을경우() throws Exception {
+    }
+
+    @Test
+    @WithMockUser
+    void 댓글작성할때_게시물이_없는경우() throws Exception {
+
+    }
+
 }

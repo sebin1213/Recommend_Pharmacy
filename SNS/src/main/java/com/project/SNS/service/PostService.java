@@ -60,7 +60,7 @@ public class PostService {
         PostEntity postEntity = postEntityRepository.findById(postId).orElseThrow(() -> new SimpleSnsApplicationException(ErrorCode.POST_NOT_FOUND, String.format("postId is %d", postId)));
         UserEntity userEntity = userEntityRepository.findByUserName(userName).orElseThrow(() -> new SimpleSnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("userName is %s", userName)));
 
-        if (!Objects.equals(postEntity.getUser().getId(), userEntity.getId())) {
+        if (postEntity.getUser() != userEntity) {
             throw new SimpleSnsApplicationException(ErrorCode.INVALID_PERMISSION, String.format("user %s has no permission with post %d", userEntity.getId(), postId));
         }
         // TOBO: 추후 추가예정
