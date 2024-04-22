@@ -60,4 +60,40 @@ public class PostControllerTest {
                 .andDo(print())
                 .andExpect(status().is(ErrorCode.INVALID_TOKEN.getStatus().value()));
     }
+
+
+
+    @Test
+    @WithAnonymousUser
+    void 게시글_수정할때_로그인상태_아니면_에러발생() throws Exception {
+        mockMvc.perform(put("/api/v1/posts/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(new PostModifyRequest("title", "body"))))
+                .andDo(print())
+                .andExpect(status().is(ErrorCode.INVALID_TOKEN.getStatus().value()));
+    }
+
+
+    @Test
+    @WithMockUser
+    void 게시글수정할때_본인이_작성한_글이_아니면_에러발생() throws Exception {
+        doThrow(new SimpleSnsApplicationException(ErrorCode.INVALID_PERMISSION)).when(postService).modify(any(), eq(1), eq("title"), eq("body"));
+        mockMvc.perform(put("/api/v1/posts/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(new PostModifyRequest("title", "body"))))
+                .andDo(print())
+                .andExpect(status().is(ErrorCode.INVALID_PERMISSION.getStatus().value()));
+    }
+
+    @Test
+    @WithMockUser
+    void 게시글수정할때_수정하려는_글이_없으면_에러발생() throws Exception {
+        doThrow(new SimpleSnsApplicationException(ErrorCode.POST_NOT_FOUND)).when(postService).modify(any(), eq(1), eq("title"), eq("body"));
+        mockMvc.perform(put("/api/v1/posts/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(new PostModifyRequest("title", "body"))))
+                .andDo(print())
+                .andExpect(status().is(ErrorCode.POST_NOT_FOUND.getStatus().value()));
+    }
+
 }

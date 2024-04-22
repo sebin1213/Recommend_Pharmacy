@@ -31,29 +31,37 @@ public class PostService {
     }
 
     @Transactional
-    public Post modify(Integer userId, Integer postId, String title, String body) {
-        PostEntity postEntity = postEntityRepository.findById(postId).orElseThrow(() -> new SimpleSnsApplicationException(ErrorCode.POST_NOT_FOUND, String.format("%d", postId)));
-        if (!Objects.equals(postEntity.getUser().getId(), userId)) {
-            throw new SimpleSnsApplicationException(ErrorCode.INVALID_PERMISSION, String.format("사용자 %s 가 권한이 없는 게시물 %d 에 접근하였습니다.", userId, postId));
+    public Post modify(String userName, Integer postId, String title, String body) {
+        PostEntity postEntity = postEntityRepository.findById(postId).orElseThrow(() -> new SimpleSnsApplicationException(ErrorCode.POST_NOT_FOUND, String.format("postId is %d", postId)));
+        UserEntity userEntity = userEntityRepository.findByUserName(userName)
+                .orElseThrow(() -> new SimpleSnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("userName is %s", userName)));
+        if (postEntity.getUser() != userEntity) {
+            throw new SimpleSnsApplicationException(ErrorCode.INVALID_PERMISSION, String.format("user %s has no permission with post %d", userName, postId));
         }
+
         postEntity.modify(title, body);
 
-        return Post.fromEntity(postEntityRepository.saveAndFlush(postEntity));
+        return Post.fromEntity(postEntityRepository.save(postEntity));
     }
+
 
     public Page<Post> list(Pageable pageable) {
         return postEntityRepository.findAll(pageable).map(Post::fromEntity);
     }
 
-    public Page<Post> my(Integer userId, Pageable pageable) {
-        return postEntityRepository.findAllByUserId(userId, pageable).map(Post::fromEntity);
+    public Page<Post> myPosts(String userName, Pageable pageable) {
+        UserEntity userEntity = userEntityRepository.findByUserName(userName)
+                .orElseThrow(() -> new SimpleSnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("userName is %s", userName)));
+        return postEntityRepository.findAllByUserId(userEntity.getId(), pageable).map(Post::fromEntity);
     }
 
     @Transactional
-    public void delete(Integer userId, Integer postId) {
+    public void delete(String userName, Integer postId) {
         PostEntity postEntity = postEntityRepository.findById(postId).orElseThrow(() -> new SimpleSnsApplicationException(ErrorCode.POST_NOT_FOUND, String.format("postId is %d", postId)));
-        if (!Objects.equals(postEntity.getUser().getId(), userId)) {
-            throw new SimpleSnsApplicationException(ErrorCode.INVALID_PERMISSION, String.format("user %s has no permission with post %d", userId, postId));
+        UserEntity userEntity = userEntityRepository.findByUserName(userName).orElseThrow(() -> new SimpleSnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("userName is %s", userName)));
+
+        if (!Objects.equals(postEntity.getUser().getId(), userEntity.getId())) {
+            throw new SimpleSnsApplicationException(ErrorCode.INVALID_PERMISSION, String.format("user %s has no permission with post %d", userEntity.getId(), postId));
         }
         // TOBO: 추후 추가예정
 //        likeEntityRepository.deleteAllByPost(postEntity);
