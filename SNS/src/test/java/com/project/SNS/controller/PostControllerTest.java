@@ -1,6 +1,7 @@
 package com.project.SNS.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.project.SNS.controller.request.PostCommentRequest;
 import com.project.SNS.controller.request.PostModifyRequest;
 import com.project.SNS.controller.request.PostWriteRequest;
 import com.project.SNS.exception.ErrorCode;
@@ -175,13 +176,13 @@ public class PostControllerTest {
                 .andExpect(status().isUnauthorized());
     }
 
-    /**
-     * 좋아요 기능 테스트목록
-     */
+
+
 
     @Test
     @WithMockUser
     void 좋아요테스트() throws Exception {
+        
     }
 
     @Test
@@ -194,25 +195,37 @@ public class PostControllerTest {
     void 좋아요클릭할때_게시물이_없는경우() throws Exception {
     }
 
-    /**
-     * 댓글 기능 테스트 목록
-     */
 
     @Test
     @WithMockUser
     void 댓글기능() throws Exception {
+        mockMvc.perform(post("/api/v1/posts/1/comments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(new PostCommentRequest("comment")))
+                ).andDo(print())
+                .andExpect(status().isOk());
     }
 
 
     @Test
     @WithAnonymousUser
     void 댓글작성할때_로그인_안했을경우() throws Exception {
+        mockMvc.perform(post("/api/v1/posts/1/comments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(new PostCommentRequest("comment")))
+                ).andDo(print())
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
     @WithMockUser
     void 댓글작성할때_게시물이_없는경우() throws Exception {
-
+        doThrow(new SimpleSnsApplicationException(ErrorCode.POST_NOT_FOUND)).when(postService).addComment(any(), any(), any());
+        mockMvc.perform(post("/api/v1/posts/1/comments")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsBytes(new PostCommentRequest("comment")))
+                ).andDo(print())
+                .andExpect(status().isNotFound());
     }
 
 }

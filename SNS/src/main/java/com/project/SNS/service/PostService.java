@@ -3,8 +3,12 @@ package com.project.SNS.service;
 import com.project.SNS.exception.ErrorCode;
 import com.project.SNS.exception.SimpleSnsApplicationException;
 import com.project.SNS.model.Post;
+import com.project.SNS.model.entity.CommentEntity;
+import com.project.SNS.model.entity.LikeEntity;
 import com.project.SNS.model.entity.PostEntity;
 import com.project.SNS.model.entity.UserEntity;
+import com.project.SNS.repository.CommentEntityRepository;
+import com.project.SNS.repository.LikeEntityRepository;
 import com.project.SNS.repository.PostEntityRepository;
 import com.project.SNS.repository.UserEntityRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +25,8 @@ public class PostService {
 
     private final UserEntityRepository userEntityRepository;
     private final PostEntityRepository postEntityRepository;
+    private final CommentEntityRepository commentEntityRepository;
+    private final LikeEntityRepository likeEntityRepository;
 
     @Transactional
     public void create(String userName, String title, String body) {
@@ -69,6 +75,22 @@ public class PostService {
         postEntityRepository.delete(postEntity);
     }
 
+    @Transactional
+    public void addComment(Integer postId, String userName, String comment) {
+        PostEntity postEntity = postEntityRepository.findById(postId).orElseThrow(() -> new SimpleSnsApplicationException(ErrorCode.POST_NOT_FOUND, String.format("postId is %d", postId)));
+        UserEntity userEntity = userEntityRepository.findByUserName(userName)
+                .orElseThrow(() -> new SimpleSnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("userName is %s", userName)));
 
+        commentEntityRepository.save(CommentEntity.of(comment, postEntity, userEntity));
+    }
 
+    @Transactional
+    public void addLike(Integer postId, String userName) {
+        PostEntity postEntity = postEntityRepository.findById(postId).orElseThrow(() -> new SimpleSnsApplicationException(ErrorCode.POST_NOT_FOUND, String.format("postId is %d", postId)));
+        UserEntity userEntity = userEntityRepository.findByUserName(userName)
+                .orElseThrow(() -> new SimpleSnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("userName is %s", userName)));
+
+        // TOBO: like 취소
+        likeEntityRepository.save(LikeEntity.of(postEntity, userEntity));
+    }
 }

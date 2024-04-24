@@ -1,11 +1,8 @@
 package com.project.SNS.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.project.SNS.controller.request.PostModifyRequest;
-import com.project.SNS.controller.request.PostWriteRequest;
 import com.project.SNS.exception.ErrorCode;
 import com.project.SNS.exception.SimpleSnsApplicationException;
-import com.project.SNS.fixture.UserEntityFixture;
+import com.project.SNS.fixture.TestUserEntity;
 import com.project.SNS.model.entity.PostEntity;
 import com.project.SNS.model.entity.UserEntity;
 import com.project.SNS.repository.PostEntityRepository;
@@ -15,8 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 
@@ -45,7 +40,7 @@ class PostServiceTest {
         String title = "title";
         String body = "body";
 
-        when(userEntityRepository.findByUserName(userName)).thenReturn(Optional.of(UserEntityFixture.get(userName, password)));
+        when(userEntityRepository.findByUserName(userName)).thenReturn(Optional.of(TestUserEntity.get(userName, password)));
         when(postEntityRepository.save(any())).thenReturn(mock(PostEntity.class));
         Assertions.assertDoesNotThrow(() -> postService.create(userName, title, body));
     }

@@ -12,9 +12,13 @@ import java.util.Date;
 
 public class JwtTokenUtils {
 
-    public static Boolean validate(String token, UserDetails userDetails, String key) {
+    public static Boolean validate(String token, String userName, String key) {
         String username = getUsername(token, key);
-        return username.equals(userDetails.getUsername()) && !isTokenExpired(token, key);
+        return username.equals(userName) && !isTokenExpired(token, key);
+    }
+
+    public static String getUsername(String token, String key) {
+        return extractAllClaims(token, key).get("username", String.class);
     }
 
     public static Claims extractAllClaims(String token, String key) {
@@ -23,10 +27,6 @@ public class JwtTokenUtils {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-    }
-
-    public static String getUsername(String token, String key) {
-        return extractAllClaims(token, key).get("username", String.class);
     }
 
     private static Key getSigningKey(String secretKey) {
@@ -47,7 +47,7 @@ public class JwtTokenUtils {
         return doGenerateToken(username, expiredTimeMs, key);
     }
 
-    private static String doGenerateToken(String username, long expireTime, String key) { // 1
+    private static String doGenerateToken(String username, long expireTime, String key) {
         Claims claims = Jwts.claims();
         claims.put("username", username);
 

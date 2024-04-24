@@ -41,7 +41,6 @@ public class CommentEntity {
     @Column(name = "removed_at")
     private Timestamp removedAt;
 
-
     @PrePersist
     void registeredAt() {
         this.registeredAt = Timestamp.from(Instant.now());

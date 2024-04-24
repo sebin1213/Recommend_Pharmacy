@@ -1,5 +1,6 @@
 package com.project.SNS.controller;
 
+import com.project.SNS.controller.request.PostCommentRequest;
 import com.project.SNS.controller.request.PostModifyRequest;
 import com.project.SNS.controller.request.PostWriteRequest;
 import com.project.SNS.controller.response.PostResponse;
@@ -43,6 +44,21 @@ public class PostController {
     @DeleteMapping("/{postId}")
     public Response<Void> delete(@PathVariable Integer postId, Authentication authentication) {
         postService.delete(authentication.getName(), postId);
+        return Response.success();
+    }
+
+
+
+
+    @PostMapping("/{postId}/comments")
+    public Response<Void> comment(@PathVariable Integer postId, @RequestBody PostCommentRequest request, Authentication authentication) {
+        postService.addComment(postId, authentication.getName(), request.getComment());
+        return Response.success();
+    }
+
+    @PostMapping("/{postId}/likes")
+    public Response<Void> like(@PathVariable Integer postId, Authentication authentication) {
+        postService.addLike(postId, authentication.getName());
         return Response.success();
     }
 }
