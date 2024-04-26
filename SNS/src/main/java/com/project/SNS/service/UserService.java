@@ -4,6 +4,7 @@ import com.project.SNS.exception.ErrorCode;
 import com.project.SNS.exception.SimpleSnsApplicationException;
 import com.project.SNS.model.User;
 import com.project.SNS.model.entity.UserEntity;
+import com.project.SNS.repository.RedisRepository;
 import com.project.SNS.repository.UserEntityRepository;
 import com.project.SNS.util.JwtTokenUtils;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class UserService implements UserDetailsService {
 
     private final UserEntityRepository userEntityRepository;
     private final BCryptPasswordEncoder encoder;
+    private final RedisRepository redisRepository;
 
     @Transactional
     public User join(String userName, String password) {
@@ -40,8 +42,9 @@ public class UserService implements UserDetailsService {
     }
 
     public String login(String userName, String password) {
-        UserEntity userEntity = userEntityRepository.findByUserName(userName).orElseThrow(() -> new SimpleSnsApplicationException(ErrorCode.DUPLICATED_USER_NAME));
-        if (!encoder.matches(password, userEntity.getPassword())) {
+        User user = loadUserByUsername(userName);
+        redisRepository.setUser(user);
+        if (!encoder.matches(password, user.getPassword())) {
             throw new SimpleSnsApplicationException(ErrorCode.INVALID_PASSWORD);
         }
         return JwtTokenUtils.generateAccessToken(userName, secretKey, expiredTimeMs);
@@ -49,9 +52,10 @@ public class UserService implements UserDetailsService {
 
 
     public User loadUserByUsername(String userName) throws UsernameNotFoundException {
-        return userEntityRepository.findByUserName(userName).map(User::fromEntity).orElseThrow(
-                () -> new SimpleSnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("userName is %s", userName))
-        );
+        return redisRepository.getUser(userName).orElseGet(
+                () -> userEntityRepository.findByUserName(userName).map(User::fromEntity).orElseThrow(
+                        () -> new SimpleSnsApplicationException(ErrorCode.USER_NOT_FOUND)
+                ));
     }
 
 }

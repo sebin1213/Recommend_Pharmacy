@@ -1,5 +1,6 @@
 package com.project.SNS.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.project.SNS.model.entity.UserEntity;
 import lombok.AllArgsConstructor;
@@ -16,6 +17,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class User implements UserDetails {
 
     private Integer id;
@@ -40,26 +42,31 @@ public class User implements UserDetails {
     }
 
     @Override
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.toString()));
     }
 
     @Override
+    @JsonIgnore
     public boolean isAccountNonExpired() {
         return removedAt == null;
     }
 
     @Override
+    @JsonIgnore
     public boolean isAccountNonLocked() {
         return removedAt == null;
     }
 
     @Override
+    @JsonIgnore
     public boolean isCredentialsNonExpired() {
         return removedAt == null;
     }
 
     @Override
+    @JsonIgnore
     public boolean isEnabled() {
         return removedAt == null;
     }

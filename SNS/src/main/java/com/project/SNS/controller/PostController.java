@@ -3,6 +3,7 @@ package com.project.SNS.controller;
 import com.project.SNS.controller.request.PostCommentRequest;
 import com.project.SNS.controller.request.PostModifyRequest;
 import com.project.SNS.controller.request.PostWriteRequest;
+import com.project.SNS.controller.response.CommentResponse;
 import com.project.SNS.controller.response.PostResponse;
 import com.project.SNS.controller.response.Response;
 import com.project.SNS.service.PostService;
@@ -60,5 +61,15 @@ public class PostController {
     public Response<Void> like(@PathVariable Integer postId, Authentication authentication) {
         postService.addLike(postId, authentication.getName());
         return Response.success();
+    }
+
+    @GetMapping("/{postId}/comments")
+    public Response<Page<CommentResponse>> getComments(Pageable pageable, @PathVariable Integer postId) {
+        return Response.success(postService.getComments(postId, pageable).map(CommentResponse::fromComment));
+    }
+
+    @GetMapping("/{postId}/likes")
+    public Response<Integer> getLikes(@PathVariable Integer postId, Authentication authentication) {
+        return Response.success(postService.getLikeCount(postId));
     }
 }

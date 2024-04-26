@@ -2,21 +2,18 @@ package com.project.SNS.service;
 
 import com.project.SNS.exception.ErrorCode;
 import com.project.SNS.exception.SimpleSnsApplicationException;
+import com.project.SNS.model.Comment;
+import com.project.SNS.model.NotificationType;
 import com.project.SNS.model.Post;
-import com.project.SNS.model.entity.CommentEntity;
-import com.project.SNS.model.entity.LikeEntity;
-import com.project.SNS.model.entity.PostEntity;
-import com.project.SNS.model.entity.UserEntity;
-import com.project.SNS.repository.CommentEntityRepository;
-import com.project.SNS.repository.LikeEntityRepository;
-import com.project.SNS.repository.PostEntityRepository;
-import com.project.SNS.repository.UserEntityRepository;
+import com.project.SNS.model.entity.*;
+import com.project.SNS.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -27,6 +24,8 @@ public class PostService {
     private final PostEntityRepository postEntityRepository;
     private final CommentEntityRepository commentEntityRepository;
     private final LikeEntityRepository likeEntityRepository;
+    private final NotificationEntityRepository notificationEntityRepository;
+
 
     @Transactional
     public void create(String userName, String title, String body) {
@@ -70,8 +69,8 @@ public class PostService {
             throw new SimpleSnsApplicationException(ErrorCode.INVALID_PERMISSION, String.format("user %s has no permission with post %d", userEntity.getId(), postId));
         }
         // TOBO: 추후 추가예정
-//        likeEntityRepository.deleteAllByPost(postEntity);
-//        commentEntityRepository.deleteAllByPost(postEntity);
+        likeEntityRepository.deleteAllByPost(postEntity);
+        commentEntityRepository.deleteAllByPost(postEntity);
         postEntityRepository.delete(postEntity);
     }
 
@@ -82,6 +81,7 @@ public class PostService {
                 .orElseThrow(() -> new SimpleSnsApplicationException(ErrorCode.USER_NOT_FOUND, String.format("userName is %s", userName)));
 
         commentEntityRepository.save(CommentEntity.of(comment, postEntity, userEntity));
+        notificationEntityRepository.save(NotificationEntity.of(NotificationType.NEW_COMMENT_ON_POST, userEntity.getId(), postId, postEntity.getUser()));
     }
 
     @Transactional
@@ -92,5 +92,17 @@ public class PostService {
 
         // TOBO: like 취소
         likeEntityRepository.save(LikeEntity.of(postEntity, userEntity));
+        notificationEntityRepository.save(NotificationEntity.of(NotificationType.NEW_LIKE_ON_POST, userEntity.getId(), postId, postEntity.getUser()));
+    }
+
+    public Integer getLikeCount(Integer postId) {
+        PostEntity postEntity = postEntityRepository.findById(postId).orElseThrow(() -> new SimpleSnsApplicationException(ErrorCode.POST_NOT_FOUND, String.format("postId is %d", postId)));
+        List<LikeEntity> likes = likeEntityRepository.findAllByPost(postEntity);
+        return likes.size();
+    }
+
+    public Page<Comment> getComments(Integer postId, Pageable pageable) {
+        PostEntity postEntity = postEntityRepository.findById(postId).orElseThrow(() -> new SimpleSnsApplicationException(ErrorCode.POST_NOT_FOUND, String.format("postId is %d", postId)));
+        return commentEntityRepository.findAllByPost(postEntity, pageable).map(Comment::fromEntity);
     }
 }

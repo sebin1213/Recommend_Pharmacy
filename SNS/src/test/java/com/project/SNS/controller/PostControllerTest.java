@@ -202,7 +202,7 @@ public class PostControllerTest {
     void 좋아요클릭할때_게시물이_없는경우() throws Exception {
         doThrow(new SimpleSnsApplicationException(ErrorCode.POST_NOT_FOUND)).when(postService).addLike(any(), any());
 
-        
+
         mockMvc.perform(post("/api/v1/posts/1/likes")
                         .contentType(MediaType.APPLICATION_JSON)
                 ).andDo(print())
